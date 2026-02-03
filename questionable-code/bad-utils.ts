@@ -1,4 +1,4 @@
-export function calculateAverage(numbers): number {
+export function calculateAverage(numbers) {
   var total = 0;
 
   for (const num of numbers) {

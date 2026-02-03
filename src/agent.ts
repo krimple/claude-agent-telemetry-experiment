@@ -51,7 +51,7 @@ test-runner agent: Always write tests first, verify problems, then fix them.
               description:
                 "Writes and runs tests to verify code behavior. Does not review code.",
               prompt:
-                "Write tests for code in ./reviewed-code to verify expected behavior. Run tests to identify problems. Fix issues based on test results. Do not write source code, just tests.",
+                "Write tests for code in ./reviewed-code to verify expected behavior. Run tests to identify problems. Fix issues based on test results. Do not write source code, just tests. Put tests in ./test/",
               tools: ["Bash", "Read", "Grep", "Edit", "Write"],
             },
           },
