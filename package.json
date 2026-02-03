@@ -1,0 +1,44 @@
+{
+  "name": "sub-agent-bug-fixer-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "agent": "node dist/agent.js",
+    "agent-individual-traces": "node dist/agentIndividualTraces.js",
+    "agent-traces-by-agent": "node dist/agentWithTracesByAgent.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.29",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/api-logs": "^0.211.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.69.0",
+    "@opentelemetry/exporter-logs-otlp-proto": "^0.211.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.211.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.211.0",
+    "@opentelemetry/resources": "^1.28.0",
+    "@opentelemetry/sdk-logs": "^0.211.0",
+    "@opentelemetry/sdk-metrics": "^1.28.0",
+    "@opentelemetry/sdk-node": "^0.211.0",
+    "@opentelemetry/semantic-conventions": "^1.28.0",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/dotenv": "^6.1.1",
+    "@types/node": "^22.19.7",
+    "@vitest/ui": "^4.0.18",
+    "eslint": "^9.39.2",
+    "globals": "^17.3.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^4.0.18"
+  }
+}
