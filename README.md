@@ -19,6 +19,9 @@ npm install
 
 ## Usage
 
+Put awful code in src/questionable-code/
+Run the agent, view the improved code in src/reviewed-code/
+
 ### Build
 
 ```bash

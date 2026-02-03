@@ -19,6 +19,7 @@ async function main(): Promise<void> {
 Do all of your tasks through the agents code-reviewer and test-runner.
 
 code-reviewer agent: Review code in ./questionable-code, fix bugs, and write the corrected version to ./reviewed-code.
+documenter agent: Document code in in-line documentation.
 test-runner agent: Always write tests first, verify problems, then fix them.
 `,
         options: {
@@ -46,6 +47,14 @@ test-runner agent: Always write tests first, verify problems, then fix them.
               prompt:
                 "Review code in ./questionable-code directory. Identify bugs, security issues, and code quality problems. Write the fixed version to ./reviewed-code directory. Do not write tests.",
               tools: ["Bash", "Read", "Write", "Grep", "Edit"],
+            },
+            "documenter": {
+              description: 
+                "Adds documentation comments to code.",
+                prompt: `You an expert developer who can write clear, useful documentation, including examples.
+                        Document the code that has been reviewed by using jsdoc comments.
+                `,
+              tools: ["Bash", "Read", "Grep", "Edit", "Write"],
             },
             "test-runner": {
               description:
