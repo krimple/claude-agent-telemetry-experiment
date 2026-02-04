@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { initTelemetry, shutdownTelemetry } from "./telemetry.js";
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { trace, SpanStatusCode } from "@opentelemetry/api";
+import { trace, context, SpanStatusCode } from "@opentelemetry/api";
 import { getErrorMessage } from "./errorUtils.js";
-import { withAgentTelemetry } from "./telemetryHooksByAgent.js";
+import { withAgentTelemetry } from "./telemetryHooksSingleTrace.js";
 import {
   mainPrompt,
   canUseTool,
@@ -13,6 +13,7 @@ import {
 } from "./queryConfig.js";
 
 async function main(): Promise<void> {
+
   initTelemetry();
 
   const tracer = trace.getTracer("claude-agent", "1.0.0");
@@ -26,29 +27,29 @@ async function main(): Promise<void> {
         canUseTool,
         allowedTools: [...allowedTools],
         permissionMode,
-        agents,
+        agents
       },
     })) {
       console.log(message);
     }
+
+    telemetry.rootSpan.setStatus({ code: SpanStatusCode.OK });
   } catch (error) {
     const errorMessage = getErrorMessage(error);
     console.error("Error during agent execution:", errorMessage);
 
-    // Create a single error span with exception recorded
-    const errorSpan = tracer.startSpan("agent.error");
-    errorSpan.setStatus({
+    telemetry.rootSpan.setStatus({
       code: SpanStatusCode.ERROR,
       message: errorMessage,
     });
-    errorSpan.recordException(
+    telemetry.rootSpan.recordException(
       error instanceof Error ? error : new Error(errorMessage),
     );
-    errorSpan.end();
 
     throw error;
   } finally {
     telemetry.cleanup();
+    telemetry.rootSpan.end();
 
     try {
       await shutdownTelemetry();

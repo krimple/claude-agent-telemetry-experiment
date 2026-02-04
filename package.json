@@ -7,7 +7,8 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
-    "agent": "node dist/agent.js",
+    "agent-builtin-telemetry": "node dist/agentClaudeBuiltinTelemetry.js",
+    "agent-single-trace": "node dist/agentSingleTrace.js",
     "agent-individual-traces": "node dist/agentIndividualTraces.js",
     "agent-traces-by-agent": "node dist/agentWithTracesByAgent.js"
   },

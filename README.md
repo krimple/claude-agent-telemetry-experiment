@@ -33,9 +33,10 @@ npm run build
 Three variants with different telemetry strategies:
 
 ```bash
-npm run agent                      # Single-trace telemetry across all agent/sub-agent
+npm run agent-single-trace         # Single-trace telemetry across all agent/sub-agent
 npm run agent-individual-traces    # Individual traces per agent
 npm run agent-traces-by-agent      # Hierarchical traces organized by agent
+npm run agent-builtin-telemetry    # Exports built-in logs and metrics telemetry
 ```
 
 ### Test

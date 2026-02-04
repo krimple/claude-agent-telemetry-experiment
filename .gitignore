@@ -1,5 +1,9 @@
 node_modules/
 dist/
+test/
+reviewed-code/*.js
+reviewed-code/*.ts
+reviewed-code/*.md
 .env
 .env.*
 !.env.example
