@@ -1,4 +1,4 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { initTelemetry, shutdownTelemetry } from "./telemetry.js";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { trace, context, SpanStatusCode } from "@opentelemetry/api";
@@ -11,6 +11,9 @@ import {
   permissionMode,
   agents,
 } from "./queryConfig.js";
+
+const otelEnv: Record<string, string> = {};
+dotenv.config({ processEnv: otelEnv });
 
 async function main(): Promise<void> {
 
@@ -30,36 +33,36 @@ async function main(): Promise<void> {
         agents
       },
     })) {
-      console.log(message);
-    }
-
-    telemetry.rootSpan.setStatus({ code: SpanStatusCode.OK });
-  } catch (error) {
-    const errorMessage = getErrorMessage(error);
-    console.error("Error during agent execution:", errorMessage);
-
-    telemetry.rootSpan.setStatus({
-      code: SpanStatusCode.ERROR,
-      message: errorMessage,
-    });
-    telemetry.rootSpan.recordException(
-      error instanceof Error ? error : new Error(errorMessage),
-    );
-
-    throw error;
-  } finally {
-    telemetry.cleanup();
-    telemetry.rootSpan.end();
-
-    try {
-      await shutdownTelemetry();
-    } catch (shutdownError) {
-      console.error(
-        "Error during telemetry shutdown:",
-        getErrorMessage(shutdownError),
-      );
-    }
+    console.log(message);
   }
+
+  telemetry.rootSpan.setStatus({ code: SpanStatusCode.OK });
+} catch (error) {
+  const errorMessage = getErrorMessage(error);
+  console.error("Error during agent execution:", errorMessage);
+
+  telemetry.rootSpan.setStatus({
+    code: SpanStatusCode.ERROR,
+    message: errorMessage,
+  });
+  telemetry.rootSpan.recordException(
+    error instanceof Error ? error : new Error(errorMessage),
+  );
+
+  throw error;
+} finally {
+  telemetry.cleanup();
+  telemetry.rootSpan.end();
+
+  try {
+    await shutdownTelemetry();
+  } catch (shutdownError) {
+    console.error(
+      "Error during telemetry shutdown:",
+      getErrorMessage(shutdownError),
+    );
+  }
+}
 }
 
 main().catch((error) => {

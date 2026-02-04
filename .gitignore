@@ -1,6 +1,7 @@
 node_modules/
 dist/
 test/
+questionable-code/*.test.ts
 reviewed-code/*.js
 reviewed-code/*.ts
 reviewed-code/*.md

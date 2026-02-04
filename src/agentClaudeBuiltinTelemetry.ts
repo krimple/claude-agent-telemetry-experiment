@@ -42,8 +42,9 @@ async function main(): Promise<void> {
             ...process.env,
             OTEL_LOG_USER_PROMPTS: otelEnv.OTEL_LOG_USER_PROMPTS,
             CLAUDE_CODE_ENABLE_TELEMETRY: otelEnv.CLAUDE_CODE_ENABLE_TELEMETRY,
-            OTEL_LOGS_EXPORTER: otelEnv.OTEL_LOGS_EXPORTER,
-            OTEL_METRICS_EXPORTER: otelEnv.OTEL_METRICS_EXPORTER,
+            // enable exporter manually so we don't have to place it in .env for the other cases
+            OTEL_LOGS_EXPORTER: "otlp",
+            OTEL_METRICS_EXPORTER: "otlp",
             OTEL_METRICS_OTLP_PROTOCOL: otelEnv.OTEL_METRICS_OTLP_PROTOCOL,
             OTEL_LOGS_OTLP_PROTOCOL: otelEnv.OTEL_LOGS_OTLP_PROTOCOL,
             OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: otelEnv.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
