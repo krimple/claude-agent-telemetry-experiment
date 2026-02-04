@@ -2,7 +2,9 @@ node_modules/
 dist/
 test/
 questionable-code/*.test.ts
+questionable-code/*.config.ts
 reviewed-code/*.js
+reviewed-code/*.txt
 reviewed-code/*.ts
 reviewed-code/*.md
 .env

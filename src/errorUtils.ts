@@ -40,6 +40,28 @@
  * }
  * ```
  */
+/**
+ * Strips ANSI escape codes and control characters from a string.
+ * Removes color codes (e.g., [32m, [39m), tabs, and other non-printable characters.
+ *
+ * @param text - The string to clean
+ * @returns The cleaned string without ANSI codes or control characters
+ */
+export function stripAnsiCodes(text: string): string {
+  return text
+    // Remove ANSI escape sequences (colors, cursor movement, etc.)
+    .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "")
+    // Remove standalone escape characters
+    .replace(/\x1b/g, "")
+    // Remove tabs and replace with single space
+    .replace(/\t/g, " ")
+    // Remove other control characters (0x00-0x1F except newlines/carriage returns)
+    .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g, "")
+    // Collapse multiple spaces into one
+    .replace(/ {2,}/g, " ")
+    .trim();
+}
+
 export function getErrorMessage(error: unknown): string {
   // Handle Error instances - always return the message property
   if (error instanceof Error) {

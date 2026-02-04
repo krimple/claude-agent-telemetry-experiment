@@ -168,11 +168,17 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const toolData = toolSpans.get(input.tool_use_id);
               if (toolData) {
                 const duration = Date.now() - toolData.startTime;
+                const errorMessage = input.error || "Unknown error";
                 toolData.span.setAttribute("duration_ms", duration);
                 toolData.span.setAttribute("tool.success", false);
+                toolData.span.setAttribute(
+                  "tool.error",
+                  truncateAttribute(errorMessage),
+                );
+                toolData.span.recordException(new Error(errorMessage));
                 toolData.span.setStatus({
                   code: SpanStatusCode.ERROR,
-                  message: "Tool execution failed",
+                  message: truncateAttribute(errorMessage, 256),
                 });
                 toolData.span.end();
                 toolSpans.delete(input.tool_use_id);
