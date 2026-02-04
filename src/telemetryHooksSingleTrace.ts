@@ -16,6 +16,8 @@ function truncateAttribute(
 export interface TelemetryContext {
   rootSpan: Span;
   rootSpanContext: Context;
+  sessionSpan: Span;
+  sessionSpanContext: Context;
   hooks: Record<string, unknown>;
   cleanup: () => void;
 }
@@ -24,8 +26,14 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
   const agentSpans = new Map<string, { span: Span; context: Context }>();
   const toolSpans = new Map<string, { span: Span; context: Context }>();
 
-  const rootSpan = tracer.startSpan("agent.session");
+  // Create root span and end it immediately
+  const rootSpan = tracer.startSpan("agent.root");
   const rootSpanContext = trace.setSpan(context.active(), rootSpan);
+  rootSpan.end();
+
+  // Create session span as child of root - this stays open until cleanup
+  const sessionSpan = tracer.startSpan("agent.session", undefined, rootSpanContext);
+  const sessionSpanContext = trace.setSpan(context.active(), sessionSpan);
 
   const hooks = {
     UserPromptSubmit: [
@@ -33,10 +41,10 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
         hooks: [
           async (input: any) => {
             if (input.hook_event_name === "UserPromptSubmit") {
-              rootSpan.setAttribute("session.id", input.session_id);
-              rootSpan.setAttribute("prompt", truncateAttribute(input.prompt));
-              rootSpan.setAttribute("cwd", input.cwd);
-              rootSpan.setAttribute(
+              sessionSpan.setAttribute("session.id", input.session_id);
+              sessionSpan.setAttribute("prompt", truncateAttribute(input.prompt));
+              sessionSpan.setAttribute("cwd", input.cwd);
+              sessionSpan.setAttribute(
                 "permission_mode",
                 input.permission_mode || "",
               );
@@ -44,7 +52,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.user_prompt_submit",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "UserPromptSubmit",
@@ -67,7 +75,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 `agent.${input.agent_type}`,
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "agent.id": input.agent_id,
@@ -111,7 +119,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
         hooks: [
           async (input: any) => {
             if (input.hook_event_name === "PreToolUse") {
-              let parentContext = rootSpanContext;
+              let parentContext = sessionSpanContext;
               const agentEntries = Array.from(agentSpans.values());
               if (agentEntries.length > 0) {
                 const lastEntry = agentEntries[agentEntries.length - 1];
@@ -214,7 +222,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.session_start",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "SessionStart",
@@ -236,7 +244,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.session_end",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "SessionEnd",
@@ -258,7 +266,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.notification",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "Notification",
@@ -280,7 +288,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.permission_request",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "PermissionRequest",
@@ -302,7 +310,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.pre_compact",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "PreCompact",
@@ -324,7 +332,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.stop",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "Stop",
@@ -346,7 +354,7 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
               const span = tracer.startSpan(
                 "hook.setup",
                 undefined,
-                rootSpanContext,
+                sessionSpanContext,
               );
               span.setAttributes({
                 "hook.event_name": "Setup",
@@ -380,7 +388,10 @@ export function withAgentTelemetry(tracer: Tracer): TelemetryContext {
       data.span.end();
       agentSpans.delete(id);
     }
+    // End the session span
+    sessionSpan.setStatus({ code: SpanStatusCode.OK });
+    sessionSpan.end();
   };
 
-  return { rootSpan, rootSpanContext, hooks, cleanup };
+  return { rootSpan, rootSpanContext, sessionSpan, sessionSpanContext, hooks, cleanup };
 }
